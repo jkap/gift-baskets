@@ -9,6 +9,7 @@
   "I don't do a whole lot ... yet."
   [& args]
   (def opts (parse-opts args cli-options))
-  (if (= (first (:arguments opts)) "prep") (do
-    (println "prepping")
-    (prep/get-categories))))
+  (case (first (:arguments opts))
+    "prep" (do
+        (println "prepping")
+        (prep/get-product-list))))
