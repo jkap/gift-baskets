@@ -10,3 +10,13 @@
     (if-not (.exists (io/as-file path))
         nil
         (read-string (slurp path))))
+
+(defn make-get-cached [default-path]
+  (fn get-cached
+    ([] (get-cached default-path))
+    ([path] (parse-if-exists path))))
+
+(defn make-write-cache [default-path]
+  (fn write-cache
+    ([data] (write-cache default-path data))
+    ([path data] (spit path (with-out-str (pr data))))))
