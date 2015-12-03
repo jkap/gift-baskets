@@ -1,7 +1,7 @@
 (ns gift-baskets.util
     (:require [clojure.java.io :as io])
     (:require [clj-http.client :as client])
-    (:use [hickory.core])
+    (:use [hickory.core :only (parse as-hickory)])
     (:gen-class))
 
 (defn get-and-parse [url] (-> (client/get url) :body parse as-hickory))

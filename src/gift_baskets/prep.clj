@@ -31,8 +31,6 @@
 
 (defn get-product-list []
   (println "getting products")
-  (def product-list (get-cached-product-list))
-  (if (nil? product-list) (do
-      (println "remote shit")
-      (def product-list (get-remote-product-list))
-      (cache-product-list product-list))))
+  (let [product-list (or (get-cached-product-list) (do (println "remote shit")
+                                                      (get-remote-product-list)))]
+    (cache-product-list product-list)))
