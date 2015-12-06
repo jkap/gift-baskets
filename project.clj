@@ -9,4 +9,6 @@
                   [hickory "0.5.4"]]
   :main ^:skip-aot gift-baskets.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:source-paths ["dev"]}
+             :dependencies [[org.clojure/tools.namespace "0.2.3"]]})

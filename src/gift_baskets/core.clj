@@ -8,8 +8,9 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (def opts (parse-opts args cli-options))
-  (case (first (:arguments opts))
+  (let [opts (parse-opts args cli-options)]
+    (case (first (:arguments opts))
     "prep" (do
         (println "prepping")
-        (prep/get-product-list))))
+        (prep/get-product-list))
+    (println "nothing"))))
