@@ -2,7 +2,8 @@
   (:require [hickory.select :as s])
   (:require [gift-baskets.util :as u])
   (:require [clojure.string :as str])
-    (:require [markov.core :as markov])
+  (:require [markov.core :as markov])
+  (:use [clj-progress.core])
   (:gen-class))
 
 (def base-url "http://www.winecountrygiftbaskets.com")
@@ -11,8 +12,11 @@
 (def get-cached-product-list (u/make-get-cached "cache/product-list.edn"))
 (def cache-product-list (u/make-write-cache "cache/product-list.edn"))
 
-(def get-cached-product-details (u/make-get-cached "product-details.edn"))
-(def cache-product-details (u/make-write-cache "product-details.edn"))
+(def get-cached-product-details (u/make-get-cached "cache/product-details.edn"))
+(def cache-product-details (u/make-write-cache "cache/product-details.edn"))
+
+(def get-cached-dictionary (u/make-get-cached "cache/dictionary.edn"))
+(def cache-dictionary (u/make-write-cache "cache/dictionary.edn"))
 
 (defn- extract-product-desc [tree]
   (str/join " " (map #(-> % :content first) (drop-last 2 (s/select (s/child (s/id "up_desc") (s/tag :li)) tree)))))
@@ -27,8 +31,8 @@
 (defn- product-details-path [url] (str "cache/details/" (u/url-to-path url) ".edn"))
 
 (defn- get-product-details [url]
-  (or (get-cached-product-details (product-details-path url)) (do (println "remote shit")
-                                           (cache-product-details (product-details-path url) (get-remote-product-details url)))))
+  (or (get-cached-product-details (product-details-path url)) (do (cache-product-details 
+                                                                    (product-details-path url) (get-remote-product-details url)))))
 
 (defn- get-remote-product-list
   ([] (get-remote-product-list products-list-url))
@@ -37,15 +41,20 @@
         (s/select (s/child (s/class "prt_list_item_img") (s/tag :a)) product-tree))))
 
 (defn build-markov-dbs [details]
-    (reduce (fn [groups detail]
-               (conj (first groups) (:title detail))
-                (conj (second groups) (:desc detail))
-                groups)
-            [[] []] details))
+  (let [dict (map (fn [corpus]
+                    (markov/build-from-string
+                      (str/join " " corpus)))
+                  (reduce (fn [groups detail] 
+                            [(conj (first groups) (:title detail))
+                             (conj (second groups) (:desc detail))])
+                          [[] []] details))]
+    (cache-dictionary dict)))
 
 (defn get-product-list []
   (println "getting products")
   (let [product-list (or (get-cached-product-list) (do (println "remote shit")
-                                                      (get-remote-product-list)))]
+                                                       (get-remote-product-list)))]
     (cache-product-list product-list)
-    (println (map get-product-details product-list))))
+    (init product-list)
+    (build-markov-dbs (map (fn [path] (tick) (get-product-details path)) product-list))
+    (done)))

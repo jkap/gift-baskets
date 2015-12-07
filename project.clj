@@ -7,7 +7,9 @@
                  [org.clojure/tools.cli "0.3.3"]
                  [clj-http "2.0.0"]
                  [hickory "0.5.4"]
-                 [janiczek/markov "0.3.0"]]
+                 [janiczek/markov "0.3.0"]
+                 [clojure-opennlp "0.3.3"]
+                 [intervox/clj-progress "0.2.1"]]
   :main ^:skip-aot gift-baskets.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
