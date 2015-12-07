@@ -2,6 +2,7 @@
   (:require [hickory.select :as s])
   (:require [gift-baskets.util :as u])
   (:require [clojure.string :as str])
+    (:require [markov.core :as markov])
   (:gen-class))
 
 (def base-url "http://www.winecountrygiftbaskets.com")
@@ -34,6 +35,13 @@
   ([url] (def product-tree (u/get-and-parse url))
    (map #(-> % :attrs :href)
         (s/select (s/child (s/class "prt_list_item_img") (s/tag :a)) product-tree))))
+
+(defn build-markov-dbs [details]
+    (reduce (fn [groups detail]
+               (conj (first groups) (:title detail))
+                (conj (second groups) (:desc detail))
+                groups)
+            [[] []] details))
 
 (defn get-product-list []
   (println "getting products")
